@@ -2,6 +2,8 @@
 -- Script 03
 -- Consultas básicas.
 --
+-- Clase 2 - Modelado de Datos y Lenguaje SQL
+--
 -- Este script cubre:
 -- - SELECT
 -- - WHERE
@@ -10,24 +12,30 @@
 -- - UPDATE
 -- - DELETE
 --
--- También incluye algunas consultas con JOIN al final,
--- solo como anticipo para responder preguntas del caso guía.
+-- Importante:
+-- En esta clase trabajamos consultas sobre una sola tabla.
+-- Las consultas que combinan varias tablas con JOIN se verán
+-- en la próxima clase.
 -- ============================================================
 
 -- ============================================================
 -- 1. SELECT
--- Obtener información de una tabla.
+-- Obtener columnas específicas de una tabla.
 -- ============================================================
 
 SELECT nombre, email
 FROM usuarios;
 
+
 SELECT nombre, fuente
 FROM datasets;
 
+SELECT nombre, tipo, version
+FROM modelos;
+
 -- ============================================================
 -- 2. SELECT *
--- Ver todas las columnas de una tabla.
+-- Obtener todas las columnas de una tabla.
 -- ============================================================
 
 SELECT *
@@ -35,47 +43,96 @@ FROM usuarios;
 
 SELECT *
 FROM datasets;
+
+SELECT *
+FROM experimentos;
 
 -- ============================================================
 -- 3. WHERE
 -- Filtrar resultados.
 -- ============================================================
 
+-- Datasets provenientes de IoT.
+
 SELECT *
 FROM datasets
 WHERE fuente = 'IoT';
 
+-- Datasets con más de 10000 registros.
+
 SELECT nombre, fuente, cantidad_registros
 FROM datasets
 WHERE cantidad_registros > 10000;
+
+-- Modelos de clasificación.
+
+SELECT nombre, tipo, version
+FROM modelos
+WHERE tipo = 'Clasificación';
+
+-- Experimentos finalizados.
+
+SELECT nombre, descripcion, finalizado
+FROM experimentos
+WHERE finalizado = TRUE;
+
+-- Métricas de un experimento conocido.
+-- Todavía no combinamos tablas: filtramos por el id del experimento.
+
+SELECT nombre, valor
+FROM metricas
+WHERE experimento_id = 1;
 
 -- ============================================================
 -- 4. ORDER BY
 -- Ordenar resultados.
 -- ============================================================
 
+-- Ordenar datasets por fecha de creación.
+
 SELECT nombre, fecha_creacion
 FROM datasets
 ORDER BY fecha_creacion DESC;
 
+-- Ordenar datasets por cantidad de registros.
+
 SELECT nombre, cantidad_registros
 FROM datasets
 ORDER BY cantidad_registros DESC;
+
+-- Ordenar métricas por valor.
+
+SELECT nombre, valor
+FROM metricas
+WHERE experimento_id = 1
+ORDER BY valor DESC;
 
 -- ============================================================
 -- 5. LIMIT
 -- Limitar la cantidad de resultados.
 -- ============================================================
 
+-- Mostrar los últimos 2 datasets cargados.
+
 SELECT *
 FROM datasets
 ORDER BY fecha_creacion DESC
-LIMIT 5;
+LIMIT 2;
+
+-- Mostrar los 2 datasets con mayor cantidad de registros.
 
 SELECT nombre, cantidad_registros
 FROM datasets
 ORDER BY cantidad_registros DESC
 LIMIT 2;
+
+-- Mostrar las 3 métricas con mayor valor del experimento 1.
+
+SELECT nombre, valor
+FROM metricas
+WHERE experimento_id = 1
+ORDER BY valor DESC
+LIMIT 3;
 
 -- ============================================================
 -- 6. UPDATE
@@ -86,15 +143,29 @@ LIMIT 2;
 -- Un UPDATE sin WHERE puede modificar toda la tabla.
 -- ============================================================
 
+-- Modificar la fuente del dataset con id = 1.
+
 UPDATE datasets
 SET fuente = 'Sensores IoT'
 WHERE id = 1;
 
--- Verificamos el cambio.
+-- Verificar el cambio.
 
 SELECT *
 FROM datasets
 WHERE id = 1;
+
+-- Marcar un experimento como finalizado.
+
+UPDATE experimentos
+SET finalizado = TRUE
+WHERE id = 3;
+
+-- Verificar el cambio.
+
+SELECT *
+FROM experimentos
+WHERE id = 3;
 
 -- ============================================================
 -- 7. DELETE
@@ -104,78 +175,36 @@ WHERE id = 1;
 -- un registro de prueba y después lo eliminamos.
 -- ============================================================
 
+-- Insertar un dataset temporal.
+
 INSERT INTO datasets(usuario_id, nombre, fuente, cantidad_registros)
 VALUES (1, 'Dataset temporal', 'Prueba', 10);
 
--- Verificamos que se insertó.
+-- Verificar que se insertó.
 
 SELECT *
 FROM datasets
 WHERE nombre = 'Dataset temporal';
 
--- Eliminamos solo el dataset temporal.
+-- Eliminar solo el dataset temporal.
 
 DELETE FROM datasets
 WHERE nombre = 'Dataset temporal';
 
--- Verificamos que ya no está.
+-- Verificar que ya no está.
 
 SELECT *
 FROM datasets
 WHERE nombre = 'Dataset temporal';
 
 -- ============================================================
--- 8. Consultas del caso guía
--- Anticipo mínimo de JOIN.
+-- 8. Advertencia didáctica
 --
--- Estas consultas responden las preguntas de la práctica:
--- - ¿Qué datasets cargó cada usuario?
--- - ¿Qué experimentos usan un dataset determinado?
--- - ¿Qué métricas obtuvo cada experimento?
--- - ¿Qué modelos fueron evaluados?
---
--- No hace falta profundizar todavía en JOIN.
--- Eso puede retomarse en la próxima clase.
+-- Los siguientes comandos NO se ejecutan.
+-- Sirven para conversar en clase.
 -- ============================================================
 
--- ¿Qué datasets cargó cada usuario?
+-- UPDATE datasets
+-- SET fuente = 'Fuente modificada';
 
-SELECT
-    usuarios.nombre AS usuario,
-    datasets.nombre AS dataset,
-    datasets.fuente
-FROM usuarios
-JOIN datasets
-    ON datasets.usuario_id = usuarios.id;
-
--- ¿Qué experimentos usan cada dataset?
-
-SELECT
-    datasets.nombre AS dataset,
-    experimentos.nombre AS experimento,
-    experimentos.finalizado
-FROM datasets
-JOIN experimentos
-    ON experimentos.dataset_id = datasets.id;
-
--- ¿Qué métricas obtuvo cada experimento?
-
-SELECT
-    experimentos.nombre AS experimento,
-    metricas.nombre AS metrica,
-    metricas.valor
-FROM experimentos
-JOIN metricas
-    ON metricas.experimento_id = experimentos.id;
-
--- ¿Qué modelos fueron evaluados en cada experimento?
-
-SELECT
-    experimentos.nombre AS experimento,
-    modelos.nombre AS modelo,
-    modelos.tipo
-FROM experimentos
-JOIN experimentos_modelos
-    ON experimentos_modelos.experimento_id = experimentos.id
-JOIN modelos
-    ON modelos.id = experimentos_modelos.modelo_id;
+-- DELETE FROM datasets;

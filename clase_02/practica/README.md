@@ -30,8 +30,8 @@ Construir un entorno local y reproducible para:
 
 | Servicio | Uso | Acceso |
 |----------|-----|--------|
-| PostgreSQL | Motor de base de datos relacional. | Puerto local `5432`. |
-| pgAdmin 4 | Interfaz web para administrar PostgreSQL y ejecutar SQL. | <http://localhost:8080>. |
+| PostgreSQL | Motor de base de datos relacional. | Puerto local `POSTGRES_LISTEN_PORT` (por defecto `5432`). |
+| pgAdmin 4 | Interfaz web para administrar PostgreSQL y ejecutar SQL. | <http://localhost:PGADMIN_LISTEN_PORT> (por defecto `8080`). |
 
 ## Requisitos previos en Windows
 
@@ -113,11 +113,17 @@ POSTGRES_DB=bdia_clase2
 POSTGRES_USER=bdia_user
 POSTGRES_PASSWORD=bdia_pass
 
+POSTGRES_LISTEN_PORT=5432
+
 PGADMIN_DEFAULT_EMAIL=admin@bdia.com
 PGADMIN_DEFAULT_PASSWORD=admin
+
+PGADMIN_LISTEN_PORT=8080
 ```
 
 Estas credenciales son para práctica local. No deben usarse en producción.
+
+`POSTGRES_LISTEN_PORT` y `PGADMIN_LISTEN_PORT` definen los puertos locales (host) contra los que se accede a cada servicio. Los puertos internos dentro de la red de Docker no cambian: PostgreSQL sigue escuchando en `5432` y pgAdmin en `80`.
 
 ## Levantar los servicios
 
@@ -138,6 +144,8 @@ docker compose ps
 Abrí el navegador en:
 
 <http://localhost:8080>
+
+(o el puerto que hayas definido en `PGADMIN_LISTEN_PORT`).
 
 Credenciales:
 
@@ -190,14 +198,15 @@ docker compose down -v
 
 ### El puerto 5432 está ocupado
 
-Cambiá el puerto externo en `docker-compose.yml`:
+Cambiá `POSTGRES_LISTEN_PORT` en tu `.env`, por ejemplo:
 
-```yaml
-ports:
-  - "5433:5432"
+```env
+POSTGRES_LISTEN_PORT=5433
 ```
 
-Luego conectate desde herramientas locales usando el puerto `5433`. Dentro de Docker, PostgreSQL sigue escuchando en `5432`.
+Reiniciá los servicios (`docker compose up -d`) y conectate desde herramientas locales usando el puerto `5433`. Dentro de Docker, PostgreSQL sigue escuchando en `5432`.
+
+Si el puerto ocupado es el de pgAdmin, cambiá `PGADMIN_LISTEN_PORT` de la misma forma.
 
 ### No puedo entrar a pgAdmin
 
